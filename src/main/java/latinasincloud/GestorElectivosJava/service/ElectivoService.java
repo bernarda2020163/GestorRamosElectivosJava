@@ -1,74 +1,68 @@
 package latinasincloud.GestorElectivosJava.service;
 
 import latinasincloud.GestorElectivosJava.model.Electivo;
-import latinasincloud.GestorElectivosJava.model.Estado;
-import latinasincloud.GestorElectivosJava.model.Estudiante;
-import latinasincloud.GestorElectivosJava.model.Postulacion;
+import latinasincloud.GestorElectivosJava.model.Profesor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@Service
-public class PostulacionService {
-    //agregar lista de postulaciones y contador Id incremental
-    private final List<Postulacion> postulaciones = new ArrayList<>();
+@Service // ¡Esta anotación es la clave!
+public class ElectivoService {
+
+    private final List<Electivo> electivos = new ArrayList<>();
     private static int contadorId = 1;
 
-    private EstudianteService estudianteService;
-    private ElectivoService electivoService;
+    private ProfesorService profesorService;
 
-
-    public PostulacionService(EstudianteService estudianteService, ElectivoService electivoService) {
-        this.estudianteService = estudianteService;
-        this.electivoService = electivoService;
+    public ElectivoService(ProfesorService profesorService) {
+        this.profesorService = profesorService;
     }
 
-    // 1. Crear profesor (POST) <-- COMENTARIO INCORRECTO
-    public Postulacion crearPostulacion(int estudianteId, int electivoId) {
-        Estudiante estudiante = estudianteService.obtenerEstudiantePorId(estudianteId);
-        Electivo electivo = electivoService.obtenerElectivoPorId(electivoId);
+    public Electivo crearElectivo(Electivo electivo, int idProfesor) {
+        electivo.setId(idProfesor);
 
-        // RIESGO DE NullPointerException si estudiante o electivo es null
-        // (Aunque EstudianteController.java maneja RecursoNoEncontradoException, el Service debería hacer la validación)
+        Profesor profesor = profesorService.obtenerProfesorPorId(idProfesor);
+        electivo.setProfesor(profesor);
 
-        Postulacion nueva = new Postulacion(
-                contadorId++,
-                estudiante,
-                electivo,
-                LocalDateTime.now(),
-                Estado.PENDIENTE
-        );
-
-        postulaciones.add(nueva);
-        estudiante.getPostulaciones().add(nueva); // RIESGO DE NullPointerException
-        electivo.getPostulaciones().add(nueva); // RIESGO DE NullPointerException
-
-        return nueva;
+        electivos.add(electivo);
+        return electivo;
     }
 
-    public Postulacion obtenerPostulacionPorId(int id) {
-        for (Postulacion postulacion : postulaciones) { // BÚSQUEDA LINEAL (O(n))
-            if (postulacion.getId() == id) {
-                return postulacion;
+    public List<Electivo> listaElectivos() {
+        return electivos;
+    }
+
+    public Electivo obtenerElectivoPorId(int id) {
+        for (Electivo electivo : electivos) {
+            if (electivo.getId() == id) {
+                return electivo;
             }
         }
         return null;
     }
 
-    public List<Postulacion> listaPostulaciones (){
-        return postulaciones;
+    public Electivo actualizarElectivo(int id, Electivo electivoAc) {
+        Electivo electivo = obtenerElectivoPorId(id);
+        electivo.setNombre(electivoAc.getNombre() != null && !electivoAc.getNombre().isEmpty() ? electivoAc.getNombre() : electivo.getNombre());
+        electivo.setDescripcion(electivoAc.getDescripcion() != null && !electivoAc.getDescripcion().isEmpty() ? electivoAc.getDescripcion() : electivo.getDescripcion());
+        if (electivoAc.getCupos() >= 0) {
+            electivo.setCupos(electivoAc.getCupos());
+        }
+        return electivo;
     }
 
-    public boolean eliminarPostulacionPorId(int postulacionId) {
-        Postulacion postulacion = obtenerPostulacionPorId(postulacionId);
-        if  (postulacion != null) {
-            postulaciones.remove(postulacion);
-            System.out.println("¡La postulacion ha sido eliminada del registro exitosamente!"); // USANDO System.out.println
+    public boolean eliminarElectivoPorId(int electivoId) {
+        Electivo electivo = obtenerElectivoPorId(electivoId);
+        if (electivo != null) {
+            electivos.remove(electivo);
+            System.out.println("¡El electivo ha sido eliminado del registro exitosamente!");
             return true;
         }
         else{
-            return false;}
+            return false;
+        }
+
     }
+
 }
