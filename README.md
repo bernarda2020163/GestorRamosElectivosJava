@@ -1,126 +1,130 @@
- Gestor de Asignación de Electivos (API REST)
-Este repositorio contiene la implementación de una API REST para gestionar la inscripción de estudiantes a electivos, incluyendo un algoritmo de asignación masiva basado en la prioridad de postulación.
+📚 Gestor de Asignación de Electivos (API REST)
+
+Este repositorio contiene la implementación de una API REST para gestionar la inscripción de estudiantes a electivos, incluyendo un algoritmo de asignación masiva basado en la prioridad de postulación.  
+
 🧭 Estructura de Endpoints
-La API se organiza en torno a cinco controladores principales, cada uno manejando las operaciones CRUD (Crear, Leer, Actualizar, Eliminar) para sus respectivas entidades, además de los endpoints de lógica de negocio clave.
-1. EstudianteController (/api/estudiantes)
+La API se organiza en torno a cinco controladores principales, cada uno manejando las operaciones CRUD (Crear, Leer, Actualizar, Eliminar) para sus respectivas entidades, además de los endpoints de lógica de negocio clave.  
 
+## 1. EstudianteController (/api/estudiantes)
 
+| Método | URL del Endpoint | Descripción | Cuerpo (Body) |
+| :---: | :---: | :---: | :---: |
+| **POST** | /api/estudiantes | Crea un nuevo estudiante en el sistema. | Estudiante (JSON) |
+| **GET** | /api/estudiantes | Lista todos los estudiantes registrados. | Ninguno |
+| **GET** | /api/estudiantes/{id} | Obtiene un estudiante específico por su ID. | Ninguno |
+| **POST** | /api/estudiantes/postular | Permite al estudiante realizar su postulación con 3 preferencias y prioridades (1, 2, 3). | PostulacionRequestDTO (JSON) |
+| **DELETE** | /api/estudiantes/{id} |Elimina un estudiante por su ID. | Ninguno|
+
+rofesorController (Ruta Base: /api/profesores)
 Método
-URL del Endpoint
+Endpoint
 Descripción
-Flujo Clave
-POST
-/api/estudiantes
-Crea un nuevo estudiante.
-CRUD
-GET
-/api/estudiantes
-Obtiene la lista de todos los estudiantes.
-CRUD
-GET
-/api/estudiantes/{id}
-Obtiene un estudiante por su ID.
-CRUD
-DELETE
-/api/estudiantes/{id}
-Elimina un estudiante por su ID.
-CRUD
-POST
-/api/estudiantes/postular
-[CRÍTICO] Permite al estudiante enviar sus 3 preferencias de electivo con su respectiva prioridad (1, 2, 3). Crea 3 registros de Postulacion en estado PENDIENTE.
-Postulación
-
-2. AdministradorController (/api/administradores)
-Método
-URL del Endpoint
-Descripción
-Flujo Clave
-POST
-/api/administradores
-Crea un nuevo administrador.
-CRUD
-GET
-/api/administradores/{id}
-Obtiene un administrador por su ID.
-CRUD
-POST
-/api/administradores/asignacion-masiva
-[CRÍTICO] Ejecuta el proceso de asignación masiva de electivos por prioridad.
-Asignación
-
-3. ElectivoController (/api/electivos)
-Método
-URL del Endpoint
-Descripción
-Flujo Clave
-POST
-/api/electivos?idProfesor={id}
-Crea un nuevo electivo y lo asigna a un profesor existente.
-CRUD
-GET
-/api/electivos
-Obtiene la lista de todos los electivos.
-CRUD
-GET
-/api/electivos/{id}
-Obtiene un electivo por su ID.
-CRUD
-PUT
-/api/electivos/{id}
-Actualiza la información de un electivo (ej. cupos, descripción).
-CRUD
-DELETE
-/api/electivos/{id}
-Elimina un electivo por su ID.
-CRUD
-
-4. ProfesorController (/api/profesores)
-Método
-URL del Endpoint
-Descripción
-Flujo Clave
+Cuerpo (Body)
 POST
 /api/profesores
 Crea un nuevo profesor.
-CRUD
+Profesor (JSON)
 GET
 /api/profesores
-Obtiene la lista de todos los profesores.
-CRUD
+Lista todos los profesores registrados.
+Ninguno
 GET
 /api/profesores/{id}
-Obtiene un profesor por su ID.
-CRUD
+Obtiene un profesor específico por su ID.
+Ninguno
 PUT
 /api/profesores/{id}
-Actualiza la información de un profesor.
-CRUD
+Actualiza los datos de un profesor existente.
+Profesor (JSON)
 DELETE
 /api/profesores/{id}
 Elimina un profesor por su ID.
-CRUD
+Ninguno
 
-5. PostulacionController (/api/postulaciones)
+3. ElectivoController (Ruta Base: /api/electivos)
 Método
-URL del Endpoint
+Endpoint
 Descripción
-Flujo Clave
+Parámetros / Body
 POST
-/api/postulaciones?estudianteId={idEst}&electivoId={idElect}
-Crea una postulación individual. (Usado principalmente para pruebas; el flujo normal usa /api/estudiantes/postular).
-CRUD
+/api/electivos
+Crea un nuevo electivo y lo asocia a un profesor.
+Query Param: idProfesor / Body: Electivo (JSON)
+GET
+/api/electivos
+Lista todos los electivos.
+Ninguno
+GET
+/api/electivos/{id}
+Obtiene un electivo específico por su ID.
+Ninguno
+PUT
+/api/electivos/{id}
+Actualiza los datos (nombre, cupos, etc.) de un electivo.
+Electivo (JSON)
+DELETE
+/api/electivos/{id}
+Elimina un electivo por su ID.
+Ninguno
+
+4. PostulacionController (Ruta Base: /api/postulaciones)
+Método
+Endpoint
+Descripción
+Parámetros / Body
+POST
+/api/postulaciones
+[CRUD BÁSICO] Crea una postulación individual para un electivo.
+Query Params: estudianteId, electivoId
 GET
 /api/postulaciones
-Obtiene la lista de todas las postulaciones.
-CRUD
+Lista todas las postulaciones creadas en el sistema.
+Ninguno
 GET
 /api/postulaciones/{id}
-Obtiene una postulación por su ID.
-CRUD
+Obtiene una postulación específica por su ID.
+Ninguno
 DELETE
 /api/postulaciones/{id}
 Elimina una postulación por su ID.
-CRUD
+Ninguno
+
+5. AdministradorController (Ruta Base: /api/administradores)
+Método
+Endpoint
+Descripción
+Cuerpo (Body)
+POST
+/api/administradores
+Crea un nuevo administrador.
+Administrador (JSON)
+GET
+/api/administradores
+Lista todos los administradores.
+Ninguno
+GET
+/api/administradores/{id}
+Obtiene un administrador específico por su ID.
+Ninguno
+POST
+/api/administradores/asignacion-masiva
+[CRÍTICO] Ejecuta la lógica central de asignación de cupos por prioridad a todas las postulaciones PENDIENTES.
+Ninguno
+PUT
+/api/administradores/{id}
+Actualiza los datos de un administrador.
+Administrador (JSON)
+DELETE
+/api/administradores/{id}
+Elimina un administrador por su ID.
+Ninguno
+
+
+
+
+
+
+
 
 📈 Diagrama de Flujo del Proceso Crítico
 El siguiente diagrama visualiza la interacción entre los endpoints clave (/postular y /asignacion-masiva) y las entidades de Postulación y Electivo.
