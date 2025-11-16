@@ -1,8 +1,8 @@
-📚 # Gestor de Asignación de Electivos (API REST)
+# 📚 Gestor de Asignación de Electivos (API REST)
 
 Este repositorio contiene la implementación de una API REST para gestionar la inscripción de estudiantes a electivos, incluyendo un algoritmo de asignación masiva basado en la prioridad de postulación.  
 
-🧭 # Estructura de Endpoints
+# 🧭  Estructura de Endpoints
 La API se organiza en torno a cinco controladores principales, cada uno manejando las operaciones CRUD (Crear, Leer, Actualizar, Eliminar) para sus respectivas entidades, además de los endpoints de lógica de negocio clave.  
 
 ## 1. EstudianteController (/api/estudiantes)
