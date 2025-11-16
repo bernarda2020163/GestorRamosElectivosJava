@@ -1,33 +1,63 @@
 package latinasincloud.GestorElectivosJava.model;
 
-public class Administrador extends Usuario {
+import jakarta.persistence.*; // Usar jakarta.persistence para Spring Boot 3+
 
-    // atributos
-    private String cargo;
+/**
+ * Entidad que representa a un Administrador en la base de datos.
+ */
+@Entity
+@Table(name = "administradores")
+public class Administrador {
 
-    // constructor por defecto
-    public Administrador() {}
+    // Se cambia el tipo de generación de ID a IDENTITY (SERIAL en PostgreSQL)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
 
-    // constructor con parámetros
+    @Column(nullable = false, length = 100)
+    private String nombre;
 
-    public Administrador(String cargo) {
-        this.cargo = cargo;
+    @Column(nullable = false, unique = true, length = 100)
+    private String email;
+
+    @Column(nullable = false, length = 50)
+    private String rol = "Administrador"; // Valor por defecto
+
+    // Constructor sin argumentos requerido por JPA
+    public Administrador() {
     }
 
-    // Administrador hereda usuario super
-    public Administrador(int id, String nombre, String email, String password, String rol, String cargo) {
-        super(id, nombre, email, password, rol);
-        this.cargo = cargo;
+    // Getters y Setters (Asegúrarse de que existan)
+
+    public int getId() {
+        return id;
     }
 
-    // getters and setters encapsulamiento de los atributos
-
-
-    public String getCargo() {
-        return cargo;
+    public void setId(int id) {
+        this.id = id;
     }
 
-    public void setCargo(String cargo) {
-        this.cargo = cargo;
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getRol() {
+        return rol;
+    }
+
+    public void setRol(String rol) {
+        this.rol = rol;
     }
 }

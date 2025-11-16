@@ -1,31 +1,42 @@
 package latinasincloud.GestorElectivosJava.model;
 
+import jakarta.persistence.*;
 import java.util.List;
 
-public class Electivo{
-    // atributos
+/**
+ * Entidad que representa un Electivo, dictado por un Profesor y asociado a Postulaciones.
+ */
+@Entity
+@Table(name = "electivos")
+public class Electivo {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+
+    @Column(nullable = false, length = 100)
     private String nombre;
+
+    @Column(length = 500)
     private String descripcion;
-    private int cupos;
+
+    @Column(nullable = false)
+    private int cupos; // Cupos disponibles
+
+    // Relación ManyToOne: Muchos Electivos a Un Profesor (Clave Foránea)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "profesor_id", nullable = false) // Columna FK en la tabla 'electivos'
     private Profesor profesor;
+
+    // Relación Bidireccional: Un Electivo puede tener muchas Postulaciones
+    @OneToMany(mappedBy = "electivo", fetch = FetchType.LAZY)
     private List<Postulacion> postulaciones;
 
-    // constructor por defecto
-    public Electivo() {}
-
-    // constructor con parámetros
-    public Electivo(int id, String nombre, String descripcion, int cupos, Profesor profesor, List<Postulacion> postulaciones) {
-        this.id = id;
-        this.nombre = nombre;
-        this.descripcion = descripcion;
-        this.cupos = cupos;
-        this.profesor = profesor;
-        this.postulaciones = postulaciones;
+    // Constructor sin argumentos requerido por JPA
+    public Electivo() {
     }
 
-    // getters and setters encapsulamiento de los atributos
-
+    // Getters y Setters (Asegúrate de que existan)
 
     public int getId() {
         return id;
@@ -51,6 +62,14 @@ public class Electivo{
         this.descripcion = descripcion;
     }
 
+    public int getCupos() {
+        return cupos;
+    }
+
+    public void setCupos(int cupos) {
+        this.cupos = cupos;
+    }
+
     public Profesor getProfesor() {
         return profesor;
     }
@@ -65,13 +84,5 @@ public class Electivo{
 
     public void setPostulaciones(List<Postulacion> postulaciones) {
         this.postulaciones = postulaciones;
-    }
-
-    public int getCupos() {
-        return cupos;
-    }
-
-    public void setCupos(int cupos) {
-        this.cupos = cupos;
     }
 }

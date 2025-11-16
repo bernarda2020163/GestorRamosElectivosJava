@@ -1,8 +1,12 @@
 package latinasincloud.GestorElectivosJava.service;
 
+import latinasincloud.GestorElectivosJava.exception.RecursoNoEncontradoException; // Importar
 import latinasincloud.GestorElectivosJava.model.Electivo;
 import latinasincloud.GestorElectivosJava.model.Profesor;
+import latinasincloud.GestorElectivosJava.repository.IElectivoRepository; // Importar Repositorio
+import latinasincloud.GestorElectivosJava.repository.IProfesorRepository; // Importar Repositorio
 import org.springframework.stereotype.Service;
+import jakarta.transaction.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,62 +14,67 @@ import java.util.List;
 @Service // ¡Esta anotación es la clave!
 public class ElectivoService {
 
-    private final List<Electivo> electivos = new ArrayList<>();
-    private static int contadorId = 1;
 
-    private ProfesorService profesorService;
+    // 1. Reemplazamos List<Electivo> y contadorId por Repositorios
+    private final IElectivoRepository electivoRepository;
+    private final IProfesorRepository profesorRepository;
 
-    // Inyección por constructor
-    public ElectivoService(ProfesorService profesorService) {
-        this.profesorService = profesorService;
+    // Inyección por constructor (ahora con Repositorios)
+    public ElectivoService(IElectivoRepository electivoRepository, IProfesorRepository profesorRepository) {
+        this.electivoRepository = electivoRepository;
+        this.profesorRepository = profesorRepository;
     }
 
+    // ---------------------------------------------------
+    // MÉTODOS CRUD (Usando JPA Repository)
+    // ---------------------------------------------------
+
+    // 1. Crear Electivo (POST)
     public Electivo crearElectivo(Electivo electivo, int idProfesor) {
 
-        electivo.setId(contadorId++); //  Se usa el contadorId de ElectivoService.
+        // Buscar el profesor (lanza 404 si no existe)
+        Profesor profesor = profesorRepository.findById(idProfesor)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Profesor no encontrado con ID: " + idProfesor));
 
-        Profesor profesor = profesorService.obtenerProfesorPorId(idProfesor);
+        // Asignar y guardar
         electivo.setProfesor(profesor);
-
-        electivos.add(electivo);
-        return electivo;
+        return electivoRepository.save(electivo);
     }
 
+    // 2. Listar Electivos (GET)
     public List<Electivo> listaElectivos() {
-        return electivos;
+        return electivoRepository.findAll();
     }
 
+    // 3. Obtener Electivo por ID (GET)
     public Electivo obtenerElectivoPorId(int id) {
-        for (Electivo electivo : electivos) {
-            if (electivo.getId() == id) {
-                return electivo;
-            }
-        }
-        return null;
+        // Usamos findById y lanzamos excepción si no existe
+        return electivoRepository.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Electivo no encontrado con ID: " + id));
     }
 
-    // La lógica de actualización está bien implementada (robusta contra nulos)
+    // 4. Actualizar Electivo por ID (PUT)
+    @Transactional
     public Electivo actualizarElectivo(int id, Electivo electivoAc) {
+        // Obtener la entidad existente (lanza 404 si no existe)
         Electivo electivo = obtenerElectivoPorId(id);
+
+        // Actualizar campos
         electivo.setNombre(electivoAc.getNombre() != null && !electivoAc.getNombre().isEmpty() ? electivoAc.getNombre() : electivo.getNombre());
         electivo.setDescripcion(electivoAc.getDescripcion() != null && !electivoAc.getDescripcion().isEmpty() ? electivoAc.getDescripcion() : electivo.getDescripcion());
         if (electivoAc.getCupos() >= 0) {
             electivo.setCupos(electivoAc.getCupos());
         }
-        return electivo;
+
+        // Guardar y retornar
+        return electivoRepository.save(electivo);
     }
 
+    // 5. Eliminar Electivo por ID (DELETE)
     public boolean eliminarElectivoPorId(int electivoId) {
+        // Verificar existencia y eliminar
         Electivo electivo = obtenerElectivoPorId(electivoId);
-        if (electivo != null) {
-            electivos.remove(electivo);
-            System.out.println("¡El electivo ha sido eliminado del registro exitosamente!");
-            return true;
-        }
-        else{
-            return false;
-        }
-
+        electivoRepository.delete(electivo);
+        return true;
     }
-
 }

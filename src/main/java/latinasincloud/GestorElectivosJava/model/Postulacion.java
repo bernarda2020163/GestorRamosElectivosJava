@@ -1,39 +1,48 @@
 package latinasincloud.GestorElectivosJava.model;
 import java.time.LocalDateTime;
 
+
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+
+/**
+ * Entidad que representa la Postulación de un Estudiante a un Electivo.
+ */
+@Entity
+@Table(name = "postulaciones")
 public class Postulacion {
-    // atributos
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+
+    // Relación ManyToOne: Muchas Postulaciones a Un Estudiante (Clave Foránea)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "estudiante_id", nullable = false)
     private Estudiante estudiante;
+
+    // Relación ManyToOne: Muchas Postulaciones a Un Electivo (Clave Foránea)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "electivo_id", nullable = false)
     private Electivo electivo;
-    private LocalDateTime fecha;
-    private Estado estado;
-    private int prioridad; // <-- ¡NUEVO CAMPO!
 
-    // constructor por defecto
-    public Postulacion() {}
+    // Columna para la prioridad: 1 (máxima), 2, 3 (mínima)
+    @Column(nullable = false)
+    private int prioridad;
 
-    // constructor con parámetros
-    public Postulacion(int id, Estudiante estudiante, Electivo electivo, LocalDateTime fecha, Estado estado) {
-        this.id = id;
-        this.estudiante = estudiante;
-        this.electivo = electivo;
-        this.fecha = fecha;
-        this.estado = estado;
-        this.prioridad = prioridad; // <-- Inicializar prioridad
+    // Enumeración para el estado (PENDIENTE, ACEPTADA, RECHAZADA)
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private Estado estado = Estado.PENDIENTE; // Valor por defecto
+
+    @Column(nullable = false)
+    private LocalDateTime fechaPostulacion = LocalDateTime.now(); // Valor por defecto
+
+    // Constructor sin argumentos requerido por JPA
+    public Postulacion() {
     }
 
-    // 3. AÑADIR EL NUEVO CONSTRUCTOR DE 6 ARGUMENTOS (Este es el que falta)
-    public Postulacion(int id, Estudiante estudiante, Electivo electivo, LocalDateTime fecha, Estado estado, int prioridad) {
-        this.id = id;
-        this.estudiante = estudiante;
-        this.electivo = electivo;
-        this.fecha = fecha;
-        this.estado = estado;
-        this.prioridad = prioridad;
-    }
-
-    // getters and setters encapsulamiento de los atributos
+    // Getters y Setters (Asegúrate de que existan)
 
     public int getId() {
         return id;
@@ -59,12 +68,12 @@ public class Postulacion {
         this.electivo = electivo;
     }
 
-    public LocalDateTime getFecha() {
-        return fecha;
+    public int getPrioridad() {
+        return prioridad;
     }
 
-    public void setFecha(LocalDateTime fecha) {
-        this.fecha = fecha;
+    public void setPrioridad(int prioridad) {
+        this.prioridad = prioridad;
     }
 
     public Estado getEstado() {
@@ -75,11 +84,11 @@ public class Postulacion {
         this.estado = estado;
     }
 
-    public int getPrioridad() { // <-- Nuevo Getter
-        return prioridad;
+    public LocalDateTime getFechaPostulacion() {
+        return fechaPostulacion;
     }
 
-    public void setPrioridad(int prioridad) { // <-- Nuevo Setter
-        this.prioridad = prioridad;
+    public void setFechaPostulacion(LocalDateTime fechaPostulacion) {
+        this.fechaPostulacion = fechaPostulacion;
     }
 }

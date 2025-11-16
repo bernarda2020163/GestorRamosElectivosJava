@@ -1,38 +1,69 @@
 package latinasincloud.GestorElectivosJava.model;
 
-import java.util.ArrayList;
+
+import jakarta.persistence.*;
 import java.util.List;
 
-public class Estudiante extends Usuario {
-    // atributos
-    private String curso;
+/**
+ * Entidad que representa un Estudiante, asociado a múltiples Postulaciones.
+ */
+@Entity
+@Table(name = "estudiantes")
+public class Estudiante {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
+    @Column(nullable = false, length = 100)
+    private String nombre;
+
+    //@Column(nullable = false, unique = true, length = 15)
+    //private String rut;
+
+    @Column(nullable = false, length = 50)
+    private String rol = "Estudiante"; // Valor por defecto
+
+    // Relación Bidireccional: Un Estudiante puede tener muchas Postulaciones
+    @OneToMany(mappedBy = "estudiante", fetch = FetchType.LAZY)
     private List<Postulacion> postulaciones;
 
-    // constructor por defecto
-    public Estudiante() {}
-
-    // constructor con parámetros
-    public Estudiante(String curso) {
-        this.curso = curso;
-        this.postulaciones = postulaciones;
+    // Constructor sin argumentos requerido por JPA
+    public Estudiante() {
     }
 
-    // Estudiante hereda usuario super
-    public Estudiante(int id, String nombre, String email, String password, String rol, String curso) {
-        super(id, nombre, email, password, rol);
-        this.curso = curso;
-        this.postulaciones = new ArrayList<>();
+    // Getters y Setters (Asegúrate de que existan)
+
+    public int getId() {
+        return id;
     }
 
-    // getters and setters encapsulamiento de los atributos
-
-
-    public String getCurso() {
-        return curso;
+    public void setId(int id) {
+        this.id = id;
     }
 
-    public void setCurso(String curso) {
-        this.curso = curso;
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    /*public String getRut() {
+        return rut;
+    }
+
+    public void setRut(String rut) {
+        this.rut = rut;
+    } */
+
+    public String getRol() {
+        return rol;
+    }
+
+    public void setRol(String rol) {
+        this.rol = rol;
     }
 
     public List<Postulacion> getPostulaciones() {

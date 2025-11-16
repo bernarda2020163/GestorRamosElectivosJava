@@ -1,124 +1,95 @@
 package latinasincloud.GestorElectivosJava.service;
 
+import latinasincloud.GestorElectivosJava.exception.RecursoNoEncontradoException;
 import latinasincloud.GestorElectivosJava.model.Administrador;
-import latinasincloud.GestorElectivosJava.model.Electivo;
-import latinasincloud.GestorElectivosJava.model.Estado;
 import latinasincloud.GestorElectivosJava.model.Postulacion;
-import org.springframework.stereotype.Service; // Importar la anotación @Service
+import latinasincloud.GestorElectivosJava.repository.IAdministradorRepository; // Importar Repositorio
+import latinasincloud.GestorElectivosJava.repository.IElectivoRepository; // Importar Repositorio
+import latinasincloud.GestorElectivosJava.repository.IPostulacionRepository; // Importar Repositorio
+import org.springframework.stereotype.Service;
+import jakarta.transaction.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
-@Service // Añadida la anotación para que Spring lo reconozca
+@Service
 public class AdministradorService {
 
-    // CRUD: Lista en memoria y contador de ID para Administrador
-    private final List<Administrador> administradores = new ArrayList<>();
-    private static int contadorId = 1;
+    // 1. Reemplazamos List<Administrador> por Repositorios
+    private final IAdministradorRepository administradorRepository;
+    private final IPostulacionRepository postulacionRepository;
+    private final IElectivoRepository electivoRepository;
 
-    // Servicios inyectados para el método de negocio (existente)
+    // Mantenemos PostulacionService para el método de negocio de asignación masiva
     private final PostulacionService postulacionService;
-    private final ElectivoService electivoService;
 
-    // Constructor para inyección de dependencias
-    public AdministradorService(PostulacionService postulacionService, ElectivoService electivoService) {
+    // Constructor para inyección de dependencias (ahora con Repositorios)
+    public AdministradorService(
+            IAdministradorRepository administradorRepository,
+            PostulacionService postulacionService,
+            IElectivoRepository electivoRepository,
+            IPostulacionRepository postulacionRepository
+    ) {
+        this.administradorRepository = administradorRepository;
         this.postulacionService = postulacionService;
-        this.electivoService = electivoService;
+        this.electivoRepository = electivoRepository;
+        this.postulacionRepository = postulacionRepository;
     }
 
     // ---------------------------------------------------
+    // MÉTODOS CRUD (Usando JPA Repository)
+    // ---------------------------------------------------
+
     // 1. Crear Administrador (POST)
     public Administrador crearAdministrador(Administrador administrador) {
-        administrador.setId(contadorId++);
-        administradores.add(administrador);
-        return administrador;
+        // JPA asigna el ID automáticamente
+        return administradorRepository.save(administrador);
     }
 
     // 2. Listar Administradores (GET)
-    public List<Administrador> listaAdministradores() {
-        return administradores;
+    public List<Administrador> listaAdministradores (){
+        return administradorRepository.findAll();
     }
 
     // 3. Obtener Administrador por ID (GET)
     public Administrador obtenerAdministradorPorId(int id) {
-        for (Administrador a : administradores) {
-            if (a.getId() == id) {
-                return a;
-            }
-        }
-        return null;
+        // Usamos findById y lanzamos RecursoNoEncontradoException si no existe
+        return administradorRepository.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Administrador no encontrado con ID: " + id));
     }
 
     // 4. Actualizar Administrador por ID (PUT)
-    public Administrador actualizarAdministrador(int id, Administrador adminActualizado) {
-        Administrador adminExistente = obtenerAdministradorPorId(id);
+    @Transactional
+    public Administrador actualizarAdministrador(int id, Administrador administradorAc) {
+        Administrador administrador = obtenerAdministradorPorId(id);
 
-        if (adminExistente != null) {
-            // Actualizar campos heredados de Usuario
-            adminExistente.setNombre(adminActualizado.getNombre());
-            adminExistente.setEmail(adminActualizado.getEmail());
-            adminExistente.setPassword(adminActualizado.getPassword());
-            adminExistente.setRol(adminActualizado.getRol());
-
-            // Actualizar campo propio de Administrador
-            adminExistente.setCargo(adminActualizado.getCargo());
-
-            return adminExistente;
-        }
-        return null;
+        administrador.setNombre(administradorAc.getNombre() != null && !administradorAc.getNombre().isEmpty() ? administradorAc.getNombre() : administrador.getNombre());
+        //administrador.setRut(administradorAc.getRut() != null && !administradorAc.getRut().isEmpty() ? administradorAc.getRut() : administrador.getRut());
+        // Guardar y retornar
+        return administradorRepository.save(administrador);
     }
 
     // 5. Eliminar Administrador por ID (DELETE)
-    public boolean eliminarAdministradorPorId(int id) {
-        Administrador eliminar = obtenerAdministradorPorId(id);
-        if (eliminar != null) {
-            administradores.remove(eliminar);
-            return true;
-        }
-        return false;
+    public boolean eliminarAdministradorPorId(int administradorId) {
+        // Verificar existencia y eliminar
+        Administrador administrador = obtenerAdministradorPorId(administradorId);
+        administradorRepository.delete(administrador);
+        return true;
     }
 
-    // El método revisarPostulacion(int postulacionId) se puede eliminar/comentar
-    // y se añade este nuevo para el proceso batch.
+    // ---------------------------------------------------
+    // MÉTODO DE NEGOCIO (Asignación Masiva)
+    // ---------------------------------------------------
 
-    // NUEVO MÉTODO AÑADIDO: Llama a la lógica de asignación central
+    /**
+     * Llama al PostulacionService para realizar el proceso de asignación masiva.
+     * @return Lista de postulaciones que fueron aceptadas.
+     */
+    @Transactional
     public List<Postulacion> realizarAsignacionMasiva() {
-        // La lógica de prioridad y cupos está en PostulacionService
+        // La lógica de asignación se mantiene en PostulacionService.
         List<Postulacion> asignacionesAceptadas = postulacionService.procesarAsignaciones();
-        System.out.println("Proceso masivo de asignación de electivos finalizado. " + asignacionesAceptadas.size() + " estudiantes asignados.");
+
+        System.out.println("Proceso de asignación masiva finalizado. Total de estudiantes asignados: " + asignacionesAceptadas.size());
         return asignacionesAceptadas;
     }
-
-    /*
-    // ---------------------------------------------------
-    // MÉTODO DE NEGOCIO (Existente, con verificación de nulidad)
-    // ---------------------------------------------------
-
-    public void revisarPostulacion (int postulacionId){
-        // Obtener la postulación
-        Postulacion postulacionRevisar = postulacionService.obtenerPostulacionPorId(postulacionId);
-
-        // Verificar que la postulación exista antes de intentar acceder a sus propiedades
-        if (postulacionRevisar != null) {
-            Electivo electivo = postulacionRevisar.getElectivo();
-
-            // Lógica de cupos
-            if(electivo.getCupos() > 0){
-                postulacionRevisar.setEstado(Estado.ACEPTADA);
-                electivo.setCupos(electivo.getCupos() - 1);
-                System.out.println("Postulación aceptada. Cupos restantes: " + electivo.getCupos());
-            }
-            else{
-                postulacionRevisar.setEstado(Estado.RECHAZADA);
-                System.out.println("Postulación rechazada por falta de cupos.");
-            }
-        } else {
-            // Manejo simple para indicar que no se encontró el recurso
-            System.out.println("Error: Postulación no encontrada con ID: " + postulacionId);
-            // NOTA: En una aplicación Spring Boot real con manejo de excepciones,
-            // PostulacionService debería lanzar RecursoNoEncontradoException.
-        }
-    } */
-
-
 }

@@ -10,168 +10,204 @@ import latinasincloud.GestorElectivosJava.model.Estado;
 import latinasincloud.GestorElectivosJava.model.Estudiante;
 import latinasincloud.GestorElectivosJava.model.Postulacion;
 
+import latinasincloud.GestorElectivosJava.repository.IPostulacionRepository; // Importar Repositorio
+import latinasincloud.GestorElectivosJava.repository.IEstudianteRepository; // Importar Repositorio
+import latinasincloud.GestorElectivosJava.repository.IElectivoRepository; // Importar Repositorio
 
 import org.springframework.stereotype.Service;
-
+import jakarta.transaction.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.stream.Collectors;
 
 
 @Service // Anotación para que Spring lo reconozca
 public class PostulacionService {
 
-    private final List<Postulacion> postulaciones = new ArrayList<>();
-    private static int contadorId = 1;
+    // 1. Reemplazamos List<Postulacion> y contadorId por Repositorios
+    private final IPostulacionRepository postulacionRepository;
+    private final IEstudianteRepository estudianteRepository;
+    private final IElectivoRepository electivoRepository;
 
-    private EstudianteService estudianteService;
-    private ElectivoService electivoService;
-
-    // Inyección de dependencias por constructor (buena práctica)
-    public PostulacionService(EstudianteService estudianteService, ElectivoService electivoService) {
-        this.estudianteService = estudianteService;
-        this.electivoService = electivoService;
+    // Inyección de dependencias por constructor
+    public PostulacionService(
+            IPostulacionRepository postulacionRepository,
+            IEstudianteRepository estudianteRepository,
+            IElectivoRepository electivoRepository
+    ) {
+        this.postulacionRepository = postulacionRepository;
+        this.estudianteRepository = estudianteRepository;
+        this.electivoRepository = electivoRepository;
     }
 
 
-    // MÉTODO EXISTENTE (Actualizado para incluir prioridad por defecto)
+    // MÉTODO DE CREACIÓN INDIVIDUAL (Actualizado para usar Repositorios)
     public Postulacion crearPostulacion(int estudianteId, int electivoId) {
-        Estudiante estudiante = estudianteService.obtenerEstudiantePorId(estudianteId);
-        Electivo electivo = electivoService.obtenerElectivoPorId(electivoId);
-
-        Postulacion nueva = new Postulacion(contadorId++,estudiante,
-                electivo, LocalDateTime.now(), Estado.PENDIENTE,
-                1 // Prioridad por defecto 1 si se usa el método simple
-        );
-
-        postulaciones.add(nueva);
-        estudiante.getPostulaciones().add(nueva);
-        electivo.getPostulaciones().add(nueva);
-
-        return nueva;
+        // Asignación de prioridad por defecto: 1
+        return crearPostulacion(estudianteId, electivoId, 1);
     }
 
-    // NUEVO MÉTODO: Crea 3 postulaciones a partir del DTO
-    public List<Postulacion> crearPostulacionesConPrioridad(PostulacionRequestDTO dto) {
-        Estudiante estudiante = estudianteService.obtenerEstudiantePorId(dto.getEstudianteId());
-        if (estudiante == null) {
-            throw new RecursoNoEncontradoException("Estudiante no encontrado con ID: " + dto.getEstudianteId());
+    public Postulacion crearPostulacion(int estudianteId, int electivoId, int prioridad) {
+        // Obtener Estudiante y Electivo (Lanzan 404 si no existen)
+        Estudiante estudiante = estudianteRepository.findById(estudianteId)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Estudiante no encontrado con ID: " + estudianteId));
+
+        Electivo electivo = electivoRepository.findById(electivoId)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Electivo no encontrado con ID: " + electivoId));
+
+        // Validación
+        if (electivo.getCupos() <= 0) {
+            throw new EstadoInvalidoException("No se puede crear la postulación, el electivo '" + electivo.getNombre() + "' no tiene cupos disponibles.");
         }
 
-        if (dto.getPreferencias() == null || dto.getPreferencias().size() != 3) {
-            throw new EstadoInvalidoException("El estudiante debe postular a exactamente 3 electivos.");
-        }
+        // Crear y guardar Postulacion
+        Postulacion postulacion = new Postulacion();
+        postulacion.setEstudiante(estudiante);
+        postulacion.setElectivo(electivo);
+        postulacion.setFechaPostulacion(LocalDateTime.now());
+        postulacion.setEstado(Estado.PENDIENTE);
+        postulacion.setPrioridad(prioridad);
 
-        // Validación de unicidad de prioridades y electivos
-        long prioridadesDistintas = dto.getPreferencias().stream().map(ElectivoPreferenciaDTO::getPrioridad).distinct().count();
-        long electivosDistintos = dto.getPreferencias().stream().map(ElectivoPreferenciaDTO::getElectivoId).distinct().count();
-        if (prioridadesDistintas != 3 || electivosDistintos != 3) {
-            throw new EstadoInvalidoException("Las postulaciones deben ser para 3 electivos distintos y con prioridades únicas (1, 2, 3).");
+        return postulacionRepository.save(postulacion);
+    }
+
+    // ---------------------------------------------------
+    // MÉTODO DE NEGOCIO (Postulación con Prioridad)
+    // ---------------------------------------------------
+
+    @Transactional
+    public List<Postulacion> crearPostulacionesConPrioridad(PostulacionRequestDTO request) {
+
+        int estudianteId = request.getEstudianteId();
+
+        // 1. Validar Estudiante
+        Estudiante estudiante = estudianteRepository.findById(estudianteId)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Estudiante no encontrado con ID: " + estudianteId));
+
+        // 2. Validar que tenga exactamente 3 preferencias
+        if (request.getPreferencias() == null || request.getPreferencias().size() != 3) {
+            throw new EstadoInvalidoException("El estudiante debe seleccionar exactamente 3 preferencias.");
         }
 
         List<Postulacion> nuevasPostulaciones = new ArrayList<>();
-        for (ElectivoPreferenciaDTO pref : dto.getPreferencias()) {
-            Electivo electivo = electivoService.obtenerElectivoPorId(pref.getElectivoId());
-            if (electivo == null) {
-                throw new RecursoNoEncontradoException("Electivo no encontrado con ID: " + pref.getElectivoId());
+        Set<Integer> electivosSeleccionados = new HashSet<>();
+
+        for (ElectivoPreferenciaDTO preferencia : request.getPreferencias()) {
+            int electivoId = preferencia.getElectivoId();
+
+            // 3. Validar si el electivo ya fue seleccionado
+            if (!electivosSeleccionados.add(electivoId)) {
+                throw new EstadoInvalidoException("El electivo con ID " + electivoId + " está duplicado en las preferencias.");
             }
 
-            Postulacion nueva = new Postulacion(contadorId++,
-                    estudiante,electivo,
-                    LocalDateTime.now(), Estado.PENDIENTE,
-                    pref.getPrioridad() // Asigna la prioridad del DTO
-            );
+            // 4. Obtener Electivo
+            Electivo electivo = electivoRepository.findById(electivoId)
+                    .orElseThrow(() -> new RecursoNoEncontradoException("Electivo no encontrado con ID: " + electivoId));
 
-            postulaciones.add(nueva);
-            estudiante.getPostulaciones().add(nueva);
-            nuevasPostulaciones.add(nueva);
+            // 5. Crear la Postulación
+            Postulacion postulacion = new Postulacion();
+            postulacion.setEstudiante(estudiante);
+            postulacion.setElectivo(electivo);
+            postulacion.setFechaPostulacion(LocalDateTime.now());
+            postulacion.setEstado(Estado.PENDIENTE);
+            postulacion.setPrioridad(preferencia.getPrioridad());
+
+            nuevasPostulaciones.add(postulacion);
         }
-        return nuevasPostulaciones;
+
+        // 6. Guardar todas las postulaciones en lote
+        return postulacionRepository.saveAll(nuevasPostulaciones);
     }
 
-    // NUEVO MÉTODO: LÓGICA DE ASIGNACIÓN MASIVA POR PRIORIDAD Y CUPOS
+    // ---------------------------------------------------
+    // MÉTODO DE NEGOCIO (Asignación Masiva)
+    // ---------------------------------------------------
+
+    @Transactional
     public List<Postulacion> procesarAsignaciones() {
-        // 1. Obtener postulaciones PENDIENTES
-        List<Postulacion> postulacionesPendientes = postulaciones.stream()
-                .filter(p -> p.getEstado() == Estado.PENDIENTE)
-                .collect(Collectors.toList());
 
-        List<Integer> estudiantesAceptadosId = new ArrayList<>();
+        // 1. Obtener todas las postulaciones PENDIENTES (Se asume findByEstado(Estado) en PostulacionRepository)
+        List<Postulacion> postulacionesPendientes = postulacionRepository.findByEstado(Estado.PENDIENTE);
+
+        // Ordenar por prioridad y luego por fecha (desempate)
+        postulacionesPendientes.sort(Comparator
+                .comparing(Postulacion::getPrioridad)
+                .thenComparing(Postulacion::getFechaPostulacion)
+        );
+
         List<Postulacion> asignacionesFinales = new ArrayList<>();
+        Set<Integer> estudiantesAceptadosId = new HashSet<>();
 
-        // 2. Iterar por Prioridad (1 es la más alta)
+        // 2. Iterar por prioridades (1, 2, 3)
         for (int prioridad = 1; prioridad <= 3; prioridad++) {
 
-            // CORRECCIÓN: Crear una copia efectivamente final de 'prioridad'
-            final int prioridadActual = prioridad;
-
-            // 3. Obtener postulaciones para la prioridad actual, ordenadas por fecha
-            List<Postulacion> postulacionesPorPrioridad = postulacionesPendientes.stream()
-                    // Usar la copia 'prioridadActual' en la lambda
-                    .filter(p -> p.getPrioridad() == prioridadActual)
-                    .sorted(Comparator.comparing(Postulacion::getFecha))
+            final int currentPrioridad = prioridad;
+            // Filtrar las postulaciones de la prioridad actual que aún no han sido aceptadas
+            List<Postulacion> postulacionesEnPrioridad = postulacionesPendientes.stream()
+                    .filter(p -> p.getPrioridad() == currentPrioridad && !estudiantesAceptadosId.contains(p.getEstudiante().getId()))
                     .collect(Collectors.toList());
 
-            // 4. Bucle 'for-each' estándar para manejar las variables mutables
-            for (Postulacion p : postulacionesPorPrioridad) {
 
+            for (Postulacion p : postulacionesEnPrioridad) {
                 int estudianteId = p.getEstudiante().getId();
                 Electivo electivo = p.getElectivo();
 
-                // 4a. Chequear si el estudiante ya fue aceptado en una prioridad mayor
+                // Re-verificar si el estudiante ya fue asignado
                 if (estudiantesAceptadosId.contains(estudianteId)) {
                     p.setEstado(Estado.RECHAZADA);
                     continue;
                 }
 
-                // 5. Asignar si hay cupo
+                // Aplicar lógica de asignación
                 if (electivo.getCupos() > 0) {
                     p.setEstado(Estado.ACEPTADA);
                     electivo.setCupos(electivo.getCupos() - 1); // Disminuir cupo
-                    estudiantesAceptadosId.add(estudianteId); // Marcar estudiante como asignado
+                    electivoRepository.save(electivo); // Persistir el cambio de cupos
+                    estudiantesAceptadosId.add(estudianteId);
                     asignacionesFinales.add(p);
                 } else {
-                    // Rechazar por falta de cupos en esa prioridad
                     p.setEstado(Estado.RECHAZADA);
                 }
+                // Las postulaciones Pendientes son la misma lista que postulacionesPendientes.
+                // Los cambios de estado (ACEPTADA/RECHAZADA) se persistirán al final.
             }
-        }
+        } // Fin del bucle de prioridades
 
-        // 6. Limpieza final: Rechazar PENDIENTES que no fueron procesadas
+        // 5. Limpieza final: Rechazar PENDIENTES que no fueron procesadas
         postulacionesPendientes.stream()
                 .filter(p -> p.getEstado() == Estado.PENDIENTE)
                 .forEach(p -> p.setEstado(Estado.RECHAZADA));
 
+        // 6. Guardar todos los cambios de estado (ACEPTADA o RECHAZADA)
+        // Se guardan los estados de todas las postulaciones pendientes procesadas.
+        postulacionRepository.saveAll(postulacionesPendientes);
+
         return asignacionesFinales;
     }
 
-    // --- MÉTODOS CRUD BÁSICOS ---
+    // --- MÉTODOS CRUD BÁSICOS (Usando JPA Repository) ---
 
+    // 1. Obtener Postulación por ID (GET)
     public Postulacion obtenerPostulacionPorId(int id) {
-        for (Postulacion postulacion : postulaciones) {
-            if (postulacion.getId() == id) {
-                return postulacion;
-            }
-        }
-        return null;
+        return postulacionRepository.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Postulación no encontrada con ID: " + id));
     }
 
+    // 2. Listar Postulaciones (GET)
     public List<Postulacion> listaPostulaciones (){
-        return postulaciones;
+        return postulacionRepository.findAll();
     }
 
+    // 3. Eliminar Postulación por ID (DELETE)
     public boolean eliminarPostulacionPorId(int postulacionId) {
+        // Verificar existencia y eliminar
         Postulacion postulacion = obtenerPostulacionPorId(postulacionId);
-        if  (postulacion != null) {
-            postulaciones.remove(postulacion);
-            System.out.println("¡La postulacion ha sido eliminada del registro exitosamente!");
-            return true;
-        }
-        else{
-            return false;}
-
+        postulacionRepository.delete(postulacion);
+        return true;
     }
 }
