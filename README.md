@@ -1,4 +1,130 @@
-📚 Gestor de Asignación de Electivos (API REST)Este repositorio contiene la implementación de una API REST para gestionar la inscripción de estudiantes a electivos, incluyendo un algoritmo de asignación masiva basado en la prioridad de postulación.🧭 Estructura de EndpointsLa API se organiza en torno a cinco controladores principales, cada uno manejando las operaciones CRUD (Crear, Leer, Actualizar, Eliminar) para sus respectivas entidades, además de los endpoints de lógica de negocio clave.1. EstudianteController (/api/estudiantes)MétodoURL del EndpointDescripciónFlujo ClavePOST/api/estudiantesCrea un nuevo estudiante.CRUDGET/api/estudiantesObtiene la lista de todos los estudiantes.CRUDGET/api/estudiantes/{id}Obtiene un estudiante por su ID.CRUDDELETE/api/estudiantes/{id}Elimina un estudiante por su ID.CRUDPOST/api/estudiantes/postular[CRÍTICO] Permite al estudiante enviar sus 3 preferencias de electivo con su respectiva prioridad (1, 2, 3). Crea 3 registros de Postulacion en estado PENDIENTE.Postulación2. AdministradorController (/api/administradores)MétodoURL del EndpointDescripciónFlujo ClavePOST/api/administradoresCrea un nuevo administrador.CRUDGET/api/administradores/{id}Obtiene un administrador por su ID.CRUDPOST/api/administradores/asignacion-masiva[CRÍTICO] Ejecuta el proceso de asignación masiva de electivos por prioridad.Asignación3. ElectivoController (/api/electivos)MétodoURL del EndpointDescripciónFlujo ClavePOST/api/electivos?idProfesor={id}Crea un nuevo electivo y lo asigna a un profesor existente.CRUDGET/api/electivosObtiene la lista de todos los electivos.CRUDGET/api/electivos/{id}Obtiene un electivo por su ID.CRUDPUT/api/electivos/{id}Actualiza la información de un electivo (ej. cupos, descripción).CRUDDELETE/api/electivos/{id}Elimina un electivo por su ID.CRUD4. ProfesorController (/api/profesores)MétodoURL del EndpointDescripciónFlujo ClavePOST/api/profesoresCrea un nuevo profesor.CRUDGET/api/profesoresObtiene la lista de todos los profesores.CRUDGET/api/profesores/{id}Obtiene un profesor por su ID.CRUDPUT/api/profesores/{id}Actualiza la información de un profesor.CRUDDELETE/api/profesores/{id}Elimina un profesor por su ID.CRUD5. PostulacionController (/api/postulaciones)MétodoURL del EndpointDescripciónFlujo ClavePOST/api/postulaciones?estudianteId={idEst}&electivoId={idElect}Crea una postulación individual. (Usado principalmente para pruebas; el flujo normal usa /api/estudiantes/postular).CRUDGET/api/postulacionesObtiene la lista de todas las postulaciones.CRUDGET/api/postulaciones/{id}Obtiene una postulación por su ID.CRUDDELETE/api/postulaciones/{id}Elimina una postulación por su ID.CRUD📈 Diagrama de Flujo del Proceso CríticoEl siguiente diagrama visualiza la interacción entre los endpoints clave (/postular y /asignacion-masiva) y las entidades de Postulación y Electivo.graph TD
+ Gestor de Asignación de Electivos (API REST)
+Este repositorio contiene la implementación de una API REST para gestionar la inscripción de estudiantes a electivos, incluyendo un algoritmo de asignación masiva basado en la prioridad de postulación.
+🧭 Estructura de Endpoints
+La API se organiza en torno a cinco controladores principales, cada uno manejando las operaciones CRUD (Crear, Leer, Actualizar, Eliminar) para sus respectivas entidades, además de los endpoints de lógica de negocio clave.
+1. EstudianteController (/api/estudiantes)
+
+
+Método
+URL del Endpoint
+Descripción
+Flujo Clave
+POST
+/api/estudiantes
+Crea un nuevo estudiante.
+CRUD
+GET
+/api/estudiantes
+Obtiene la lista de todos los estudiantes.
+CRUD
+GET
+/api/estudiantes/{id}
+Obtiene un estudiante por su ID.
+CRUD
+DELETE
+/api/estudiantes/{id}
+Elimina un estudiante por su ID.
+CRUD
+POST
+/api/estudiantes/postular
+[CRÍTICO] Permite al estudiante enviar sus 3 preferencias de electivo con su respectiva prioridad (1, 2, 3). Crea 3 registros de Postulacion en estado PENDIENTE.
+Postulación
+
+2. AdministradorController (/api/administradores)
+Método
+URL del Endpoint
+Descripción
+Flujo Clave
+POST
+/api/administradores
+Crea un nuevo administrador.
+CRUD
+GET
+/api/administradores/{id}
+Obtiene un administrador por su ID.
+CRUD
+POST
+/api/administradores/asignacion-masiva
+[CRÍTICO] Ejecuta el proceso de asignación masiva de electivos por prioridad.
+Asignación
+
+3. ElectivoController (/api/electivos)
+Método
+URL del Endpoint
+Descripción
+Flujo Clave
+POST
+/api/electivos?idProfesor={id}
+Crea un nuevo electivo y lo asigna a un profesor existente.
+CRUD
+GET
+/api/electivos
+Obtiene la lista de todos los electivos.
+CRUD
+GET
+/api/electivos/{id}
+Obtiene un electivo por su ID.
+CRUD
+PUT
+/api/electivos/{id}
+Actualiza la información de un electivo (ej. cupos, descripción).
+CRUD
+DELETE
+/api/electivos/{id}
+Elimina un electivo por su ID.
+CRUD
+
+4. ProfesorController (/api/profesores)
+Método
+URL del Endpoint
+Descripción
+Flujo Clave
+POST
+/api/profesores
+Crea un nuevo profesor.
+CRUD
+GET
+/api/profesores
+Obtiene la lista de todos los profesores.
+CRUD
+GET
+/api/profesores/{id}
+Obtiene un profesor por su ID.
+CRUD
+PUT
+/api/profesores/{id}
+Actualiza la información de un profesor.
+CRUD
+DELETE
+/api/profesores/{id}
+Elimina un profesor por su ID.
+CRUD
+
+5. PostulacionController (/api/postulaciones)
+Método
+URL del Endpoint
+Descripción
+Flujo Clave
+POST
+/api/postulaciones?estudianteId={idEst}&electivoId={idElect}
+Crea una postulación individual. (Usado principalmente para pruebas; el flujo normal usa /api/estudiantes/postular).
+CRUD
+GET
+/api/postulaciones
+Obtiene la lista de todas las postulaciones.
+CRUD
+GET
+/api/postulaciones/{id}
+Obtiene una postulación por su ID.
+CRUD
+DELETE
+/api/postulaciones/{id}
+Elimina una postulación por su ID.
+CRUD
+
+📈 Diagrama de Flujo del Proceso Crítico
+El siguiente diagrama visualiza la interacción entre los endpoints clave (/postular y /asignacion-masiva) y las entidades de Postulación y Electivo.
+graph TD
     %% Controllers (Rutas Base)
     subgraph 1. EstudianteController [/api/estudiantes]
         E_POST[POST /estudiantes: Crear Estudiante]
@@ -36,3 +162,5 @@
     A_ASIGNAR -->|2. Valida Cupos| EL_CRUD
     A_ASIGNAR -->|3. Actualiza Estado (ACEPTADA/RECHAZADA)| PO_CRUD
     EL_CRUD -->|Disminuye Cupos| A_ASIGNAR
+
+
