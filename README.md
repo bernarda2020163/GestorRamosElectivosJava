@@ -15,33 +15,19 @@ La API se organiza en torno a cinco controladores principales, cada uno manejand
 | **POST** | /api/estudiantes/postular | Permite al estudiante realizar su postulación con 3 preferencias y prioridades (1, 2, 3). | PostulacionRequestDTO (JSON) |
 | **DELETE** | /api/estudiantes/{id} |Elimina un estudiante por su ID. | Ninguno|
 
-rofesorController (Ruta Base: /api/profesores)
-Método
-Endpoint
-Descripción
-Cuerpo (Body)
-POST
-/api/profesores
-Crea un nuevo profesor.
-Profesor (JSON)
-GET
-/api/profesores
-Lista todos los profesores registrados.
-Ninguno
-GET
-/api/profesores/{id}
-Obtiene un profesor específico por su ID.
-Ninguno
-PUT
-/api/profesores/{id}
-Actualiza los datos de un profesor existente.
-Profesor (JSON)
-DELETE
-/api/profesores/{id}
-Elimina un profesor por su ID.
-Ninguno
+## 2. ProfesorController (Ruta Base: /api/profesores)
 
-3. ElectivoController (Ruta Base: /api/electivos)
+| Método | URL del Endpoint | Descripción | Cuerpo (Body) |
+| :---: | :---: | :---: | :---: |
+| **POST** | /api/profesores | Crea un nuevo profesor. | Profesor (JSON) |
+| **GET** | /api/profesores | Lista todos los profesores registrados. | Ninguno |
+| **GET** | /api/profesores/{id} | Obtiene un profesor específico por su ID. | Ninguno |
+| **PUT** | /api/profesores/{id} | Actualiza los datos de un profesor existente. | Profesor (JSON) |
+| **DELETE** | /api/profesores/{id} |Elimina un profesor por su ID. | Ninguno|
+
+
+
+## 3. ElectivoController (Ruta Base: /api/electivos)
 Método
 Endpoint
 Descripción
