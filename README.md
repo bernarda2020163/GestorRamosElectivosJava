@@ -179,6 +179,7 @@ Base URL: http://localhost:8080/api
 ### A. CREACIÓN DE PROFESORES (IDs: 1, 2, 3)
 
 | # | Método | Endpoint | Descripción | Body (RAW - JSON) |
+| :---: | :---: | :---: | :---: | :---: |
 | 1 | POST | /profesores | Prof. 1 (Área A - Historia) | {"nombre": "Prof. Ana Castro", "email": "ana.c@uni.cl", "password": "pass1", "especialidad": "Historia"} |
 | 2 | POST | /profesores | Prof. 2 (Área B - Matemáticas) | {"nombre": "Prof. Luis Pérez", "email": "luis.p@uni.cl", "password": "pass2", "especialidad": "Matemáticas"} |
 | 3 | POST | /profesores | Prof. 3 (Área C - Artes) | {"nombre": "Prof. Carla Diaz", "email": "carla.d@uni.cl", "password": "pass3", "especialidad": "Artes Visuales"} |  
@@ -188,6 +189,7 @@ Base URL: http://localhost:8080/api
 Usamos 10 electivos de las 3 áreas con cupos bajos para forzar la asignación por prioridad. Nota: idProfesor corresponde a los IDs creados arriba.
 
 | # | Método | Endpoint | Electivo (ID / Área / Cupos) | Body (RAW - JSON) |
+| :---: | :---: | :---: | :---: | :---: |
 | 4 | POST | /electivos?idProfesor=1 | ID: 1 / A: Estética / Cupos: 2 | {"nombre": "Estética", "descripcion": "Estudio de la belleza y el arte.", "cupos": 2} |
 | 5 | POST | /electivos?idProfesor=1 | ID: 2 / A: Comprensión Histórica / Cupos: 3 | {"nombre": "Comprensión Histórica del Presente", "descripcion": "Análisis de eventos actuales.", "cupos": 3} |
 | 6 | POST | /electivos?idProfesor=2 | ID: 3 / B: Límites, Derivadas e Integrales / Cupos: 2 | {"nombre": "Límites, Derivadas e Integrales", "descripcion": "Cálculo avanzado.", "cupos": 2} |
@@ -204,6 +206,7 @@ Usamos 10 electivos de las 3 áreas con cupos bajos para forzar la asignación p
 Simulamos la carrera como el nivel (3° Medio o 4° Medio) para propósitos de simulación. Los IDs van del 1 al 40. 
 
 | # | Método | Endpoint | Estudiante (ID) | Carrera/Nivel |
+| :---: | :---: | :---: | :---: | :---: |
 | 14-33 | POST | /estudiantes | 1 a 20 | 3° Medio (10 Ingeniería, 10 Medicina) |
 | 34-53 | POST | /estudiantes | 21 a 40 | 4° Medio (10 Derecho, 10 Periodismo) |
 
@@ -215,6 +218,7 @@ Ejemplo Estudiante 4° Medio (ID: 21): {"nombre": "Estudiante 4M-01", "email": "
 ## FASE 2: CRUD BÁSICO Y ERRORES (10 Peticiones)
 
 | # | Método | Endpoint | Descripción | Body (RAW - JSON) |
+| :---: | :---: | :---: | :---: | :---: |
 | 54 | GET | /profesores/1 | Lectura por ID (OK) | (No Body) |
 | 55 | PUT | /electivos/5 | Actualización (Electivo): Cambia cupos | {"nombre": "Artes Visuales, Audiovisuales y Multimediales", "cupos": 30} |
 | 56 | GET | /electivos | Lectura (Lista): Verifica el cambio | (No Body) |
@@ -227,7 +231,8 @@ Ejemplo Estudiante 4° Medio (ID: 21): {"nombre": "Estudiante 4M-01", "email": "
 
 Aquí se simulan 10 postulaciones masivas para los primeros 10 estudiantes. Usaremos el criterio de a lo menos dos áreas distintas para que sean válidas.
 
-| # | Estudiante (ID) | Método | Endpoint | Preferencias (Electivo ID, Prioridad) | Áreas (Válido: A, B, C) |
+| # | Estudiante (ID) | Método | Endpoint | Preferencias (Electivo ID, Prioridad) | Áreas (Válido: A, B, C) 
+| :---: | :---: | :---: | :---: | :---: |:---: |
 | 61 | E-1 (3°M) | POST | /estudiantes/postular | A(1), B(3), C(5) | A, B, C (Válido) |
 | 62 | E-2 (3°M) | POST | /estudiantes/postular | A(2), B(4), C(6) | A, B, C (Válido) |
 | 63 | E-3 (3°M) | POST | /estudiantes/postular | B(3), C(5), A(7) | B, C, A (Válido) |
