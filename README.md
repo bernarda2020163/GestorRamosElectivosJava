@@ -257,6 +257,7 @@ Cuerpo de Postulación (Ejemplo Estudiante 1):
 ### 4. Ejecución de la Asignación y Error de Lógica
 
 | # | Método | Endpoint | Descripción | Body (RAW - JSON) |
+| :---: | :---: | :---: | :---: | :---: |
 | 71 | POST | /administradores/asignacion-masiva | Ejecutar Asignación: Esto acepta/rechaza las postulaciones basándose en la prioridad y los cupos (ver FASE 1, Electivos). | (No Body) |
 | 72 | GET | /postulaciones | Verificar Resultados: Muestra el estado final (ACEPTADA/RECHAZADA) de las 30 postulaciones creadas. | (No Body) |
 | 73 | POST | /estudiantes/postular | Error 400 (Estado Inválido): Prioridades duplicadas (Invalida la regla 1, 2, 3) | {"estudianteId": 11, "preferencias": [ {"electivoId": 1, "prioridad": 1}, {"electivoId": 2, "prioridad": 1}, {"electivoId": 3, "prioridad": 2} ]} |
