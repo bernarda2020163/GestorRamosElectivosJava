@@ -1,5 +1,6 @@
 package latinasincloud.GestorElectivosJava.controller;
 
+import latinasincloud.GestorElectivosJava.model.Postulacion;
 import latinasincloud.GestorElectivosJava.exception.RecursoNoEncontradoException;
 import latinasincloud.GestorElectivosJava.model.Administrador;
 import latinasincloud.GestorElectivosJava.service.AdministradorService;
@@ -7,8 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+
+// Este controlador permitirá a un administrador ejecutar la asignación masiva.
 
 @RestController
 @RequestMapping("/api/administradores")
@@ -75,25 +81,16 @@ public class AdministradorController {
         }
     }
 
-    // -------------------------------------------------------------------------
-    // MÉTODO DE NEGOCIO (Basado en el AdministradorService)
-    // -------------------------------------------------------------------------
+    // Endpoint para activar el proceso de asignación masiva.
+    // Esto lo debe hacer un administrador al final del periodo de postulación.
+    @PostMapping("/asignacion-masiva")
+    public ResponseEntity<List<Postulacion>> realizarAsignacionMasiva() {
+        // Llama al servicio para ejecutar la lógica de asignación por prioridad
+        List<Postulacion> asignacionesAceptadas = administradorService.realizarAsignacionMasiva();
 
-    /**
-     * PUT /api/administradores/revisar-postulacion/{postulacionId}
-     * Realiza la revisión de una postulación, cambiando su estado a ACEPTADA o RECHAZADA.
-     */
-    @PutMapping("/revisar-postulacion/{postulacionId}")
-    public ResponseEntity<Void> revisarPostulacion(@PathVariable int postulacionId) {
-
-        // Llama al service para aplicar la lógica de revisión de cupos
-        administradorService.revisarPostulacion(postulacionId);
-
-        // Se asume que la verificación de existencia de la Postulación y el manejo
-        // de excepciones por recurso no encontrado (RecursoNoEncontradoException)
-        // se manejan dentro del AdministradorService o en la capa de PostulacionService.
-
-        // Retorna 200 OK para indicar que la acción se completó con éxito
-        return ResponseEntity.ok().build();
+        // Retorna las postulaciones que fueron exitosamente ACEPTADAS
+        return ResponseEntity.ok(asignacionesAceptadas);
     }
+
+
 }

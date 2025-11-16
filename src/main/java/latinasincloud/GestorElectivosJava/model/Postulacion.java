@@ -8,6 +8,7 @@ public class Postulacion {
     private Electivo electivo;
     private LocalDateTime fecha;
     private Estado estado;
+    private int prioridad; // <-- ¡NUEVO CAMPO!
 
     // constructor por defecto
     public Postulacion() {}
@@ -19,6 +20,17 @@ public class Postulacion {
         this.electivo = electivo;
         this.fecha = fecha;
         this.estado = estado;
+        this.prioridad = prioridad; // <-- Inicializar prioridad
+    }
+
+    // 3. AÑADIR EL NUEVO CONSTRUCTOR DE 6 ARGUMENTOS (Este es el que falta)
+    public Postulacion(int id, Estudiante estudiante, Electivo electivo, LocalDateTime fecha, Estado estado, int prioridad) {
+        this.id = id;
+        this.estudiante = estudiante;
+        this.electivo = electivo;
+        this.fecha = fecha;
+        this.estado = estado;
+        this.prioridad = prioridad;
     }
 
     // getters and setters encapsulamiento de los atributos
@@ -61,5 +73,13 @@ public class Postulacion {
 
     public void setEstado(Estado estado) {
         this.estado = estado;
+    }
+
+    public int getPrioridad() { // <-- Nuevo Getter
+        return prioridad;
+    }
+
+    public void setPrioridad(int prioridad) { // <-- Nuevo Setter
+        this.prioridad = prioridad;
     }
 }

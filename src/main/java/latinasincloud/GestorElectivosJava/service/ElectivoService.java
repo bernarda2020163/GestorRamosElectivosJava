@@ -15,12 +15,14 @@ public class ElectivoService {
 
     private ProfesorService profesorService;
 
+    // Inyección por constructor
     public ElectivoService(ProfesorService profesorService) {
         this.profesorService = profesorService;
     }
 
     public Electivo crearElectivo(Electivo electivo, int idProfesor) {
-        electivo.setId(idProfesor);
+
+        electivo.setId(contadorId++); //  Se usa el contadorId de ElectivoService.
 
         Profesor profesor = profesorService.obtenerProfesorPorId(idProfesor);
         electivo.setProfesor(profesor);
@@ -42,6 +44,7 @@ public class ElectivoService {
         return null;
     }
 
+    // La lógica de actualización está bien implementada (robusta contra nulos)
     public Electivo actualizarElectivo(int id, Electivo electivoAc) {
         Electivo electivo = obtenerElectivoPorId(id);
         electivo.setNombre(electivoAc.getNombre() != null && !electivoAc.getNombre().isEmpty() ? electivoAc.getNombre() : electivo.getNombre());

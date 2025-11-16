@@ -78,6 +78,18 @@ public class AdministradorService {
         return false;
     }
 
+    // El método revisarPostulacion(int postulacionId) se puede eliminar/comentar
+    // y se añade este nuevo para el proceso batch.
+
+    // NUEVO MÉTODO AÑADIDO: Llama a la lógica de asignación central
+    public List<Postulacion> realizarAsignacionMasiva() {
+        // La lógica de prioridad y cupos está en PostulacionService
+        List<Postulacion> asignacionesAceptadas = postulacionService.procesarAsignaciones();
+        System.out.println("Proceso masivo de asignación de electivos finalizado. " + asignacionesAceptadas.size() + " estudiantes asignados.");
+        return asignacionesAceptadas;
+    }
+
+    /*
     // ---------------------------------------------------
     // MÉTODO DE NEGOCIO (Existente, con verificación de nulidad)
     // ---------------------------------------------------
@@ -106,5 +118,7 @@ public class AdministradorService {
             // NOTA: En una aplicación Spring Boot real con manejo de excepciones,
             // PostulacionService debería lanzar RecursoNoEncontradoException.
         }
-    }
+    } */
+
+
 }
