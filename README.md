@@ -380,6 +380,8 @@ PostgreSQL https://www.postgresql.org/ es un sistema de gestión de bases de dat
 * Extensibilidad: Ofrece una gran variedad de tipos de datos nativos (incluyendo JSON, XML, direcciones IP, y figuras geométricas) y permite a los usuarios crear sus propias funciones y extensiones, siendo PostGIS (para datos geoespaciales) una de las más populares.
 
 * Cumplimiento ACID: Garantiza la Atomicidad, Consistencia, Aislamiento y Durabilidad de las transacciones, lo cual es fundamental para la integridad de los datos.
+  
+* Manejo adecuado de errores, considerando los códigos 404 Not Found (recurso no existe) y 400 Bad Request (fallo de validación).
 
 __4) pgAdmin__
 pgAdmin es la plataforma de administración y desarrollo de código abierto más popular y rica en funciones para PostgreSQL.
@@ -389,5 +391,9 @@ pgAdmin es la plataforma de administración y desarrollo de código abierto más
 * Administración: Facilita la gestión de usuarios, roles, permisos y la realización de tareas administrativas como backups (copias de seguridad) y restauración.
 * Monitoreo: Proporciona un dashboard (panel de control) para visualizar el estado del servidor, las conexiones activas y el rendimiento de las consultas.
 
+### COSAS PENDIENTES Y PROPUESTAS DE MEJORAS
 
+* Trabajar en la seguridad y el control de datos para las clases de administrador y profesor, agregando los RequestDTOs que sean necesarios.
+* Solucionar problemas de bucles de serialización JSON para conseguir una API mucho más profesional.
+* Reestructurar el código para un manejo de base de datos mucho más limpio, el cual pueda garantizar la aplicación de todos los principios de ACID.
 
